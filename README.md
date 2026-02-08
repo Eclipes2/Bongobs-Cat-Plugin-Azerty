@@ -36,8 +36,9 @@ To get a DLL that loads all 6 modes (including **standard_azerty**) from the plu
 
 - **Extract to the correct folder:** Unzip so that `obs-plugins` and `data` are **directly** inside the OBS installation directory (where **obs64.exe** is), not in a subfolder.
 - **64-bit OBS only:** Use OBS Studio 64-bit; the plugin in `obs-plugins/64bit/` is for 64-bit only.
-latest-supported-vc-redist) (e.g. VC++ 2015–2022 x64) if needed.
-- **OBS version:** The plugin targets OBS Studio **25.0.0+**. If the error persists, rebuild the plugin with the same OBS version you use.
+- **Visual C++ Redistributable:** Install [VC++ 2015–2022 x64](https://aka.ms/vs/17/release/vc_redist.x64.exe). Required for the plugin to load.
+- **OBS version mismatch (most common):** The pre-built **bongobs-cat.dll** was built against one specific OBS version. If your OBS is newer or older (e.g. 28, 30, 31), the DLL may fail to load. **Solution:** rebuild the plugin from this repo using the same OBS version as your installation (see [OBS build instructions](https://obsproject.com/wiki/Build-Instructions-For-Windows)), then replace `obs-plugins/64bit/bongobs-cat.dll` with your build.
+- **Check the exact error:** Run OBS from a command prompt and check the console, or run the diagnostic script: from your OBS folder, `powershell -ExecutionPolicy Bypass -File path\to\scripts\diagnose-plugin-load.ps1` (or copy the script to the OBS folder and run it there). Error code **127** = OBS version mismatch → rebuild the plugin with your OBS version.
 
 ---
 

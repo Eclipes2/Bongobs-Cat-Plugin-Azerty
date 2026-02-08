@@ -55,7 +55,7 @@ Live2DManager::Live2DManager() :
 Live2DManager::~Live2DManager()
 {
 	for (size_t i = 0; i < MAXMODELDATA; i++) {
-		ReleaseAllModel(i);
+		ReleaseAllModel(static_cast<Csm::csmUint16>(i));
 	}
     
 }
@@ -96,10 +96,10 @@ void Live2DManager::OnUpdate(Csm::csmUint16 id) const
 		    ->GetEventManager()
 		    ->GetRelativeMouse(px, py);
 
-	    _eventmanager->MouseEventMoved(width,height,
-					   px, py);
-	    px = _eventmanager->GetCenterX() - _eventmanager->GetStartX()+width/2;
-	    py = _eventmanager->GetCenterY() - _eventmanager->GetStartY() + height /2;
+	    _eventmanager->MouseEventMoved(width, height,
+					   static_cast<float>(px), static_cast<float>(py));
+	    px = static_cast<int>(_eventmanager->GetCenterX() - _eventmanager->GetStartX() + width/2);
+	    py = static_cast<int>(_eventmanager->GetCenterY() - _eventmanager->GetStartY() + height /2);
 
     } else {
 	    VtuberDelegate::GetInstance()
@@ -219,7 +219,7 @@ void Live2DManager::ChangeMouseMovement(Csm::csmBool _mouse) {
 				->GetView()
 				->GetEventManager()
 				->GetRelativeMouse(px, py);
-			_eventmanager->MouseEventBegan(px,py);
+			_eventmanager->MouseEventBegan(static_cast<float>(px), static_cast<float>(py));
 		}
 		
 	}

@@ -101,7 +101,7 @@ set(${APP_NAME}_SOURCES
         Hook.cpp
 	EventManager.cpp
 	Define.cpp
-	json.cpp
+	jsoncpp.cpp
 	InfoReader.cpp
 	)
 
@@ -139,6 +139,8 @@ target_link_libraries(${APP_NAME}
 	glfw
 	${OPENGL_LIBRARIES}
 )
+# Avoid LNK1218: LNK4098 (CRT conflict with Live2D/GLFW) treated as error.
+target_link_options(${APP_NAME} PRIVATE $<$<PLATFORM_ID:Windows>:/IGNORE:4098>)
 
 # Specify include directories.
 target_include_directories(${APP_NAME} PRIVATE ${STB_PATH})

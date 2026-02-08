@@ -1,8 +1,53 @@
 #include <obs-module.h>
+#include <util/text-lookup.h>
 #include "VtuberPlugin.hpp"
 
 OBS_DECLARE_MODULE()
-OBS_MODULE_USE_DEFAULT_LOCALE("bongobs-cat", "en-US")
+
+/* Custom locale: no dependency on locale/en-US.ini so plugin loads even when
+   OBS data path differs (e.g. bin/64bit vs install root). Strings show as keys. */
+static void *obs_module_lookup = NULL;
+
+const char *obs_module_text(const char *val)
+{
+	const char *out = val;
+	if (obs_module_lookup)
+		text_lookup_getstr((lookup_t *)obs_module_lookup, val, &out);
+	return out;
+}
+
+MODULE_EXPORT bool obs_module_get_string(const char *val, const char **out)
+{
+	if (obs_module_lookup && text_lookup_getstr((lookup_t *)obs_module_lookup, val, out))
+		return true;
+	*out = val;
+	return false;
+}
+
+MODULE_EXPORT void obs_module_set_locale(const char *)
+{
+	if (obs_module_lookup) {
+		text_lookup_destroy((lookup_t *)obs_module_lookup);
+		obs_module_lookup = NULL;
+	}
+	/* Optionally try default locale file; if missing, plugin still works */
+	char *path = obs_module_file("locale/en-US.ini");
+	if (path) {
+		lookup_t *lookup = text_lookup_create(path);
+		bfree(path);
+		if (lookup)
+			obs_module_lookup = lookup;
+	}
+}
+
+MODULE_EXPORT void obs_module_free_locale(void)
+{
+	if (obs_module_lookup) {
+		text_lookup_destroy((lookup_t *)obs_module_lookup);
+		obs_module_lookup = NULL;
+	}
+}
+
 MODULE_EXPORT const char *obs_module_description(void)
 {
 	return "Bongo Cat";

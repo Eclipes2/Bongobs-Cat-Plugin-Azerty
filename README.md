@@ -19,26 +19,28 @@ This fork adds **native AZERTY keyboard support** to the Bongo Cat OBS plugin, s
 | `mode/config.json` | **ModelPath** updated to include `"standard_azerty"` so the mode appears in OBS |
 | `View.cpp` / `View.hpp` | Plugin now uses **obs_module_file()** so config and assets load from `data/obs-plugins/bongobs-cat/Bango Cat/` (all 6 modes appear when using the DLL built from this repo) |
 
-### How to use
+### Installation
 
-1. Download the latest release from [Releases](https://github.com/Eclipes2/Bongobs-Cat-Plugin-Azerty/releases) (get **Bango.Cat.AZERTY.zip**). Unzip to the **OBS installation root** (the folder where **obs64.exe** is), so that `obs-plugins/64bit/` and `data/obs-plugins/bongobs-cat/` end up inside that folder.
-2. In OBS, add the **Bongo Cat** source and open its **Properties**.
-3. In **Mode**, select **standard_azerty** (the zip includes this mode for AZERTY keyboards).
-4. The cat will now respond correctly to A, Z, Q, W, and the other keys on an AZERTY keyboard.
+1. Download the latest **[Bango.Cat.AZERTY.zip](https://github.com/Eclipes2/Bongobs-Cat-Plugin-Azerty/releases)** from Releases.
+2. **Extract the zip into your OBS installation folder** (the folder where **obs64.exe** is). The zip contains `obs-plugins` and `data` — let them merge with the existing OBS folders. **That’s it.**
+3. Open OBS, add the **Bongo Cat** source, and in **Mode** choose **standard_azerty** for AZERTY keyboards.
 
-Optional: to show AZERTY labels on the on-screen keyboard, you can replace the PNGs in `mode/standard_azerty/keyboard/` (and optionally `lefthand/`) with versions that display A, Z, E, R, etc. The behaviour is already correct via **KeyUse**; custom images are only for visual labels.
+No scripts to run. Just unzip and use.
 
-### Building the plugin
+### Building the release zip (maintainers)
 
-To get a DLL that loads all 6 modes (including **standard_azerty**) from the plugin data folder, build this project with the OBS build environment (see [OBS build instructions for Windows](https://obsproject.com/wiki/Build-Instructions-For-Windows)). The plugin uses CMake and `install_obs_plugin_with_data`; it must be built as an OBS plugin (with libobs). After building, copy **bongobs-cat.dll** into `release/obs-plugins/64bit/`. Also copy **Live2DCubismCore.dll** from `CubismSdk/Core/dll/windows/x86_64/` into `release/obs-plugins/64bit/`. Then create **Bango.Cat.AZERTY.zip** from `release/data` and `release/obs-plugins` (these two folders at the root of the zip). The plugin loads config and assets from `data/obs-plugins/bongobs-cat/Bango Cat/` via `obs_module_file()`.
+Build the plugin inside the OBS tree, then run:
 
-### If the plugin fails to load
+```powershell
+.\scripts\build-release-zip.ps1 -ObsRundir "C:\path\to\obs-studio\build_x64\rundir\Release" -RepoPath "C:\path\to\Bongobs-Cat-Plugin-Azerty"
+```
 
-- **Extract to the correct folder:** Unzip so that `obs-plugins` and `data` are **directly** inside the OBS installation directory (where **obs64.exe** is), not in a subfolder.
-- **64-bit OBS only:** Use OBS Studio 64-bit; the plugin in `obs-plugins/64bit/` is for 64-bit only.
-- **Visual C++ Redistributable:** Install [VC++ 2015–2022 x64](https://aka.ms/vs/17/release/vc_redist.x64.exe). Required for the plugin to load.
-- **OBS version mismatch (most common):** The pre-built **bongobs-cat.dll** was built against one specific OBS version. If your OBS is newer or older (e.g. 28, 30, 31), the DLL may fail to load. **Solution:** rebuild the plugin from this repo using the same OBS version as your installation (see [OBS build instructions](https://obsproject.com/wiki/Build-Instructions-For-Windows)), then replace `obs-plugins/64bit/bongobs-cat.dll` with your build.
-- **Check the exact error:** Run OBS from a command prompt and check the console, or run the diagnostic script: from your OBS folder, `powershell -ExecutionPolicy Bypass -File path\to\scripts\diagnose-plugin-load.ps1` (or copy the script to the OBS folder and run it there). Error code **127** = OBS version mismatch → rebuild the plugin with your OBS version.
+This creates **Bango.Cat.AZERTY.zip** at the repo root. Upload it to GitHub Releases.
+
+### If the plugin doesn’t load
+
+- Extract the zip so that **obs-plugins** and **data** are directly inside the OBS folder (where **obs64.exe** is), not in a subfolder.
+- Use **64-bit OBS** and install [VC++ 2015–2022 x64](https://aka.ms/vs/17/release/vc_redist.x64.exe) if needed.
 
 ---
 

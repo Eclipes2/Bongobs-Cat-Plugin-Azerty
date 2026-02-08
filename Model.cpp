@@ -494,11 +494,12 @@ CubismMotionQueueEntryHandle Model::StartMotion(const csmChar* group, csmInt32 n
 
         csmByte* buffer;
         csmSizeInt size;
+        csmFloat32 fadeTime = 0.0f;
         buffer = CreateBuffer(path.GetRawString(), &size);
 	if (size == 0)
 		goto end;
 	motion = static_cast<CubismMotion*>(LoadMotion(buffer, size, NULL, onFinishedMotionHandler));
-        csmFloat32 fadeTime = _modelSetting->GetMotionFadeInTimeValue(group, no);
+        fadeTime = _modelSetting->GetMotionFadeInTimeValue(group, no);
         if (fadeTime >= 0.0f)
         {
             motion->SetFadeInTime(fadeTime);
@@ -703,7 +704,7 @@ csmFloat32 Model::GetDeltaTime()
 }
 
 void Model::UpdateTime() {
-		s_currentFrame = glfwGetTime();
+		s_currentFrame = static_cast<csmFloat32>(glfwGetTime());
 		s_deltaTime = s_currentFrame - s_lastFrame;
 		s_lastFrame = s_currentFrame;
 }

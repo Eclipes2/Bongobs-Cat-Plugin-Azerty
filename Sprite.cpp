@@ -22,8 +22,8 @@ Sprite::Sprite(float x, float y, float width, float height,
 	_spriteColor[2] = 1.0f;
 	_spriteColor[3] = 1.0f;
 
-	_width = width;
-	_height = height;
+	_width = static_cast<int>(width);
+	_height = static_cast<int>(height);
 }
 
 Sprite::~Sprite() {}
@@ -142,8 +142,8 @@ void Sprite::ResetRect(float x, float y, float width, float height)
 	_rect.up = (y + height * 0.5f);
 	_rect.down = (y - height * 0.5f);
 
-	_width = width;
-	_height = height;
+	_width = static_cast<int>(width);
+	_height = static_cast<int>(height);
 }
 
 void Sprite::ResetLocation(float x, float y) {

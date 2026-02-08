@@ -1,6 +1,7 @@
 #include "View.hpp"
 #include <math.h>
 #include <string>
+#include <fstream>
 #include "Pal.hpp"
 #include "VtuberDelegate.hpp"
 #include "Live2DManager.hpp"
@@ -15,6 +16,60 @@
 using namespace std;
 using namespace Define;
 
+static bool file_exists(const std::string &path) {
+    std::ifstream f(path.c_str());
+    return f.good();
+}
+
+static std::string find_plugin_data_path(void)
+{
+    /* Try obs_module_file first (OBS-provided data path). */
+    char *p = obs_module_file("locale/en-US.ini");
+    if (p) {
+        std::string path(p);
+        bfree(p);
+        size_t pos = path.find("locale");
+        if (pos != std::string::npos)
+            return path.substr(0, pos) + "Bango Cat/";
+    }
+    p = obs_module_file("Bango Cat/mode/config.json");
+    if (p) {
+        std::string path(p);
+        bfree(p);
+        size_t pos = path.find("Bango Cat");
+        if (pos != std::string::npos)
+            return path.substr(0, pos) + "Bango Cat/";
+    }
+    /* Fallback: derive from DLL path so plugin works when OBS data path differs. */
+    const char *bin = obs_get_module_binary_path(obs_current_module());
+    if (!bin) return "";
+    std::string dir(bin);
+    size_t last = dir.find_last_of("/\\");
+    if (last == std::string::npos) return "";
+    dir.resize(last + 1);
+    const char *candidates[] = {
+        "../../data/obs-plugins/bongobs-cat/",
+        "../../../data/obs-plugins/bongobs-cat/",
+        "../data/obs-plugins/bongobs-cat/"
+    };
+    for (const char *rel : candidates) {
+        std::string base = dir + rel;
+        std::string test = base + "Bango Cat/mode/config.json";
+        if (file_exists(test))
+            return base + "Bango Cat/";
+    }
+#ifdef _WIN32
+    /* Windows: try ProgramData (some OBS builds use it). */
+    const char *pd = getenv("ProgramData");
+    if (pd) {
+        std::string base = std::string(pd) + "/obs-studio/plugins/bongobs-cat/data/";
+        if (file_exists(base + "Bango Cat/mode/config.json"))
+            return base + "Bango Cat/";
+    }
+#endif
+    return "";
+}
+
 View::View() : _programId(0), _mod(0), isUseLive2d(true), isUseMask(false)
 {
     _clearColor[0] = 1.0f;
@@ -24,19 +79,8 @@ View::View() : _programId(0), _mod(0), isUseLive2d(true), isUseMask(false)
 
     eventManager = new EventManager();
 
-    char* mod_file = obs_module_file("locale/en-US.ini");
-    if (mod_file) {
-        string mod_path(mod_file);
-        bfree(mod_file);
-        size_t pos = mod_path.find("locale");
-        if (pos != string::npos) {
-            _resourcesPath = mod_path.substr(0, pos) + "Bango Cat/";
-        } else {
-            _resourcesPath = ResourcesPath;
-        }
-    } else {
-        _resourcesPath = ResourcesPath;
-    }
+    std::string found = find_plugin_data_path();
+    _resourcesPath = found.empty() ? ResourcesPath : found;
 
     const string modePath = _resourcesPath + ModePath;
     const string maskPath = _resourcesPath + MaskPath;
@@ -79,9 +123,9 @@ void View::Initialize(int id)
 
     float screenW = fabsf(left - right);
     _viewData[id]._deviceToScreen->LoadIdentity(); // サイズが変わった際などリセット必須
-    _viewData[id]._deviceToScreen->ScaleRelative(screenW / width,
-						 -screenW / width);
-    _viewData[id]._deviceToScreen->TranslateRelative(-width ,-height);
+    _viewData[id]._deviceToScreen->ScaleRelative(screenW / static_cast<float>(width),
+						 -screenW / static_cast<float>(width));
+    _viewData[id]._deviceToScreen->TranslateRelative(-static_cast<float>(width), -static_cast<float>(height));
 
     // 表示範囲の設定
     _viewData[id]._viewMatrix->SetMaxScale(ViewMaxScale); // 限界拡大率
@@ -121,12 +165,12 @@ void View::UpdataViewData(int id) {
     double _y = -static_cast<float>(RenderTargetHeight-height) /static_cast<float>(RenderTargetHeight);
     int a = id;
     if (_viewData[id]._viewMatrix) {
-	_viewData[id]._viewMatrix->Scale(0.615*scale, scale*1.1);
-	_viewData[id]._viewMatrix->Translate(x + _x, y+_y);
+	_viewData[id]._viewMatrix->Scale(static_cast<float>(0.615*scale), static_cast<float>(scale*1.1));
+	_viewData[id]._viewMatrix->Translate(static_cast<float>(x + _x), static_cast<float>(y+_y));
     } else {
 	    Initialize(id);
-	    _viewData[id]._viewMatrix->Scale(0.615 * scale, scale * 1.1);
-	    _viewData[id]._viewMatrix->Translate(x + _x, y + _y);
+	    _viewData[id]._viewMatrix->Scale(static_cast<float>(0.615 * scale), static_cast<float>(scale * 1.1));
+	    _viewData[id]._viewMatrix->Translate(static_cast<float>(x + _x), static_cast<float>(y + _y));
     }
 
     //SwitchRenderingTarget(SelectTarget_ViewFrameBuffer,id);
@@ -346,10 +390,10 @@ void View::InitializeSpirite(int id) {
 					targetPath +
 					_modeinfo[_modelCount]
 						.BackgroundImageName);
-			float x = width * 0.5;
-			float y = height * 0.5;
-			float fWidth = static_cast<float>(width * 0.5);
-			float fHeight = static_cast<float>(height * 0.5);
+			float x = static_cast<float>(width) * 0.5f;
+			float y = static_cast<float>(height) * 0.5f;
+			float fWidth = static_cast<float>(width) * 0.5f;
+			float fHeight = static_cast<float>(height) * 0.5f;
 			_viewData[id]._mode[_modelCount]._back =
 				new Sprite(x, y, fWidth, fHeight,
 					   backgroundTexture->id, _programId);
@@ -361,10 +405,10 @@ void View::InitializeSpirite(int id) {
 			textureManager->CreateTextureFromPngFile(
 				targetPath +
 				_modeinfo[_modelCount].CatBackgroundImageName);
-			float x = width * 0.5;
-			float y = height * 0.5;
-			float fWidth = static_cast<float>(width * 0.5);
-			float fHeight = static_cast<float>(height * 0.5);
+			float x = static_cast<float>(width) * 0.5f;
+			float y = static_cast<float>(height) * 0.5f;
+			float fWidth = static_cast<float>(width) * 0.5f;
+			float fHeight = static_cast<float>(height) * 0.5f;
 			_viewData[id]._mode[_modelCount]._catback =
 				new Sprite(x, y, fWidth, fHeight,catbackgroundTexture->id,_programId);
 		} else

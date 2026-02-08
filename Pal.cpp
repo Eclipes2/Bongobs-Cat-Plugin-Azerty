@@ -29,7 +29,7 @@ csmByte* Pal::LoadFileAsBytes(const string filePath, csmSizeInt* outSize)
     struct _stat64 statBuf;
     if (_wstat64(wstr, &statBuf) == 0)
     {
-        size = statBuf.st_size;
+        size = static_cast<int>(statBuf.st_size);
     } else {
         size = 0;
     }

@@ -155,7 +155,7 @@ void VtuberDelegate::updataModelSetting(bool _randomMotion, double _delayTime,
 					int id)
 {
 	Live2DManager::GetInstance()->UpdateModelSetting(
-		_randomMotion, _delayTime, _breath, _eyeBlink, _istrack,
+		_randomMotion, static_cast<Csm::csmFloat32>(_delayTime), _breath, _eyeBlink, _istrack,
 		_isMouseHorizontalFlip, _isMouseVerticalFlip);
 }
 

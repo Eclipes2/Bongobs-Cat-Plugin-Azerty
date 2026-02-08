@@ -474,7 +474,7 @@ void CubismMotion::Parse(const csmByte* motionJson, const csmSizeInt size)
         {
             if (segmentPosition == 0)
             {
-		if (totalPointCount + 1 >_motionData->Points.GetSize()) {
+		if (static_cast<csmInt32>(totalPointCount + 1) > static_cast<csmInt32>(_motionData->Points.GetSize())) {
 			isExPoint = true;
 			goto end;
 		}
@@ -496,7 +496,7 @@ void CubismMotion::Parse(const csmByte* motionJson, const csmSizeInt size)
             switch (segment)
             {
             case CubismMotionSegmentType_Linear: {
-		    if (totalPointCount + 1 > _motionData->Points.GetSize()) {
+		    if (static_cast<csmInt32>(totalPointCount + 1) > static_cast<csmInt32>(_motionData->Points.GetSize())) {
 			    isExPoint = true;
 			    goto end;
 		    }
@@ -512,7 +512,7 @@ void CubismMotion::Parse(const csmByte* motionJson, const csmSizeInt size)
                 break;
             }
             case CubismMotionSegmentType_Bezier: {
-		    if (totalPointCount + 3 > _motionData->Points.GetSize()) {
+		    if (static_cast<csmInt32>(totalPointCount + 3) > static_cast<csmInt32>(_motionData->Points.GetSize())) {
 			    isExPoint = true;
 			    goto end;
 		    }
@@ -534,7 +534,7 @@ void CubismMotion::Parse(const csmByte* motionJson, const csmSizeInt size)
                 break;
             }
             case CubismMotionSegmentType_Stepped: {
-		    if (totalPointCount + 1 > _motionData->Points.GetSize()) {
+		    if (static_cast<csmInt32>(totalPointCount + 1) > static_cast<csmInt32>(_motionData->Points.GetSize())) {
 			    isExPoint = true;
 			    goto end;
 		    }
@@ -550,7 +550,7 @@ void CubismMotion::Parse(const csmByte* motionJson, const csmSizeInt size)
                 break;
             }
             case CubismMotionSegmentType_InverseStepped: {
-		    if (totalPointCount + 1 > _motionData->Points.GetSize()) {
+		    if (static_cast<csmInt32>(totalPointCount + 1) > static_cast<csmInt32>(_motionData->Points.GetSize())) {
 			    isExPoint = true;
 			    goto end;
 		    }

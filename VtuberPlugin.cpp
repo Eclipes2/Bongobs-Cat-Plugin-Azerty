@@ -29,8 +29,8 @@ void * VtuberPlugin::VtuberPlugin::VtuberCreate(obs_data_t *settings,
 
 	double x = obs_data_get_double(settings, "x");
 	double y = obs_data_get_double(settings, "y");
-	int width = obs_data_get_int(settings, "width");
-	int height = obs_data_get_int(settings, "height");
+	int width = static_cast<int>(obs_data_get_int(settings, "width"));
+	int height = static_cast<int>(obs_data_get_int(settings, "height"));
 	double scale = obs_data_get_double(settings, "scale");
 	double delayTime = obs_data_get_double(settings, "delaytime");
 	bool random_motion = obs_data_get_bool(settings, "random_motion");
@@ -162,8 +162,8 @@ void VtuberPlugin::VtuberPlugin::Vtuber_update(
 
 	double x = obs_data_get_double(settings, "x");
 	double y = obs_data_get_double(settings, "y");
-	int width = obs_data_get_int(settings,"width");
-	int height = obs_data_get_int(settings, "height");
+	int width = static_cast<int>(obs_data_get_int(settings,"width"));
+	int height = static_cast<int>(obs_data_get_int(settings, "height"));
 	double vscale = obs_data_get_double(settings, "scale");
 	double delayTime = obs_data_get_double(settings, "delay");
 	bool random_motion = obs_data_get_bool(settings, "random_motion");

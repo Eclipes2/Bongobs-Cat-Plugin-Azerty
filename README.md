@@ -21,7 +21,7 @@ This fork adds **native AZERTY keyboard support** to the Bongo Cat OBS plugin, s
 
 ### How to use
 
-1. Download the latest release from [Releases](https://github.com/Eclipes2/Bongobs-Cat-Plugin-Azerty/releases) (get **Bango.Cat.zip** from the latest release). Unzip to the OBS root directory.
+1. Download the latest release from [Releases](https://github.com/Eclipes2/Bongobs-Cat-Plugin-Azerty/releases) (get **Bango.Cat.AZERTY.zip**). Unzip to the OBS root directory.
 2. In OBS, add the **Bongo Cat** source and open its **Properties**.
 3. In **Mode**, select **standard_azerty** (the zip includes this mode for AZERTY keyboards).
 4. The cat will now respond correctly to A, Z, Q, W, and the other keys on an AZERTY keyboard.
@@ -30,22 +30,8 @@ Optional: to show AZERTY labels on the on-screen keyboard, you can replace the P
 
 ### Building the plugin
 
-To get a DLL that loads all 6 modes (including **standard_azerty**) from the plugin data folder, build this project with the OBS build environment (see [OBS build instructions for Windows](https://obsproject.com/wiki/Build-Instructions-For-Windows)). The plugin uses CMake and `install_obs_plugin_with_data`; it must be built as an OBS plugin (with libobs). After building, copy the generated **bongobs-cat.dll** into `release/obs-plugins/64bit/`, then zip the contents of the `release/` folder (bin, data, obs-plugins) so those three folders are at the root of **Bango.Cat.zip**. The plugin loads config and assets from `data/obs-plugins/bongobs-cat/Bango Cat/` via `obs_module_file()`.
+To get a DLL that loads all 6 modes (including **standard_azerty**) from the plugin data folder, build this project with the OBS build environment (see [OBS build instructions for Windows](https://obsproject.com/wiki/Build-Instructions-For-Windows)). The plugin uses CMake and `install_obs_plugin_with_data`; it must be built as an OBS plugin (with libobs). After building, copy **bongobs-cat.dll** into `release/obs-plugins/64bit/`, then create **Bango.Cat.AZERTY.zip** from `release/data` and `release/obs-plugins` (these two folders at the root of the zip). The plugin loads config and assets from `data/obs-plugins/bongobs-cat/Bango Cat/` via `obs_module_file()`.
 
 ---
 
-# Bongobs Cat OBS Plugin (upstream)
- Obs Live2d 插件
- Bongo cat overlay for OBS plugin. This plugin is based on the built in Live2d CubismNativeFrameWork & Opengl. 
-# 支持
-* 支持 OBS Studio version : 25.0.0+
-# Support
-* Support OBS Studio version** : 25.0.0+
-# 如何使用
-* 从 [Releases](https://github.com/Eclipes2/Bongobs-Cat-Plugin-Azerty/releases) 下载最新版本（获取 **Bango.Cat.zip**）
-* 解压缩文件到OBS根目录
-# How to use
-* Download the latest release from [Releases](https://github.com/Eclipes2/Bongobs-Cat-Plugin-Azerty/releases) (get **Bango.Cat.zip** from the latest release)
-* Unzip to the OBS root directory
-# Bongo cat
-![](https://github.com/a1928370421/Bongobs-Cat-Plugin/blob/master/Resources/Bango%20Cat/ezgif-2-81825e3faab3.gif)
+**Upstream:** [Bongobs-Cat-Plugin](https://github.com/a1928370421/Bongobs-Cat-Plugin) — Bongo Cat Live2D overlay for OBS (OBS Studio 25.0.0+). This fork adds the **standard_azerty** mode for AZERTY keyboards.

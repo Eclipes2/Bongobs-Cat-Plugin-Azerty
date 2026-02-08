@@ -4,7 +4,8 @@
 # Usage:
 #   .\scripts\build-release-zip.ps1 -ObsRundir "C:\...\obs-studio\build_x64\rundir\Release" -RepoPath "C:\...\Bongobs-Cat-Plugin-Azerty"
 #
-# The zip contains obs-plugins/64bit/ and data/obs-plugins/bongobs-cat/. Users just extract it into their OBS folder.
+# The zip contains obs-plugins/64bit/ (plugin DLLs + obs.dll + all bin\64bit DLLs so it loads without fix script)
+# and data/obs-plugins/bongobs-cat/. Users just extract into their OBS folder and it works.
 
 param(
     [Parameter(Mandatory = $true)]
@@ -50,6 +51,32 @@ try {
     New-Item -ItemType Directory -Path $dest64 -Force | Out-Null
     Copy-Item -Path $pluginDll -Destination $dest64 -Force
     Copy-Item -Path $live2dDll -Destination $dest64 -Force
+
+    # Bundle all DLLs from OBS build bin\64bit so the plugin loads without running the fix script (self-contained zip)
+    $bin64 = Join-Path $ObsRundir "bin\64bit"
+    if (Test-Path $bin64) {
+        $copied = 0
+        Get-ChildItem -Path $bin64 -Filter "*.dll" -File -ErrorAction SilentlyContinue | ForEach-Object {
+            Copy-Item -Path $_.FullName -Destination (Join-Path $dest64 $_.Name) -Force
+            $copied++
+        }
+        Get-ChildItem -Path $bin64 -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+            $subDest = Join-Path $dest64 $_.Name
+            New-Item -ItemType Directory -Path $subDest -Force | Out-Null
+            Get-ChildItem -Path $_.FullName -Filter "*.dll" -File -ErrorAction SilentlyContinue | ForEach-Object {
+                Copy-Item -Path $_.FullName -Destination (Join-Path $subDest $_.Name) -Force
+                $copied++
+            }
+        }
+        Write-Host "Bundled $copied DLL(s) from OBS bin\64bit (zip will work without fix script)" -ForegroundColor Green
+    }
+
+    # VC++ runtimes (in case OBS build dir doesn't have them; user may need them next to plugin)
+    $sys32 = [Environment]::GetFolderPath("System")
+    @("MSVCP140.dll", "VCRUNTIME140.dll", "VCRUNTIME140_1.dll") | ForEach-Object {
+        $src = Join-Path $sys32 $_
+        if (Test-Path $src) { Copy-Item -Path $src -Destination (Join-Path $dest64 $_) -Force }
+    }
 
     $destData = Join-Path $tempDir "data\obs-plugins\bongobs-cat"
     if (Test-Path $pluginDataDir) {

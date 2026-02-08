@@ -1,18 +1,21 @@
 # Tries to load bongobs-cat.dll and shows the Windows error code.
-# Usage (from OBS folder):  .\diagnose-plugin-load.ps1
-# Or:  .\diagnose-plugin-load.ps1 -ObsPath "C:\Program Files\obs-studio"
-
-param([string]$ObsPath)
+# Usage:  .\diagnose-plugin-load.ps1 -ObsPath "C:\Program Files\obs-studio"
+# Add -SimulateOBS to load WITHOUT adding bin\64bit to path (see the error OBS gets).
+param([string]$ObsPath, [switch]$SimulateOBS)
 
 $ErrorActionPreference = "Stop"
 $obsRoot = if ($ObsPath) { $ObsPath } else { Get-Location }
 
-$dllPath = Join-Path $obsRoot "obs-plugins\64bit\bongobs-cat.dll"
+# Prefer bin\64bit\obs-plugins\64bit if present (same as OBS)
+$dllPath = Join-Path $obsRoot "bin\64bit\obs-plugins\64bit\bongobs-cat.dll"
 if (-not (Test-Path $dllPath)) {
-    Write-Host "DLL not found: $dllPath" -ForegroundColor Red
-    Write-Host "Set OBS root in the script or run from OBS installation folder."
+    $dllPath = Join-Path $obsRoot "obs-plugins\64bit\bongobs-cat.dll"
+}
+if (-not (Test-Path $dllPath)) {
+    Write-Host "DLL not found under $obsRoot" -ForegroundColor Red
     exit 1
 }
+Write-Host "Testing: $dllPath" -ForegroundColor Gray
 
 Add-Type -TypeDefinition @"
 using System;
@@ -32,13 +35,15 @@ $obsDll = Get-ChildItem -Path $obsRoot -Recurse -Filter "obs.dll" -ErrorAction S
 $dllSearchDir = $obsRoot
 if ($obsDll) {
     $dllSearchDir = $obsDll.DirectoryName
-    Write-Host "Found obs.dll in: $dllSearchDir" -ForegroundColor Gray
-} else {
-    Write-Host "obs.dll not found under $obsRoot (OBS may use a different layout)." -ForegroundColor Yellow
+    if (-not $SimulateOBS) { Write-Host "Found obs.dll in: $dllSearchDir" -ForegroundColor Gray }
 }
 
-# Add OBS folder to DLL search path so obs.dll (and other deps) are found
-[Loader]::SetDllDirectory($dllSearchDir) | Out-Null
+# SimulateOBS = do NOT set DLL directory, so we see the same failure as OBS
+if ($SimulateOBS) {
+    Write-Host "Simulating OBS load (no extra DLL path)..." -ForegroundColor Cyan
+} else {
+    [Loader]::SetDllDirectory($dllSearchDir) | Out-Null
+}
 $err = 0
 try {
     $h = [Loader]::LoadLibraryEx($dllPath, [IntPtr]::Zero, 0)
@@ -85,7 +90,24 @@ try {
                 Write-Host "obs.dll is missing in your OBS folder. When OBS runs, it normally finds obs.dll next to obs64.exe." -ForegroundColor Yellow
                 Write-Host "Check: 1) Run OBS and add Bongo Cat - it may work (OBS sets its own paths). 2) Or reinstall OBS if the install is broken." -ForegroundColor Yellow
             } else {
-                Write-Host "Workaround: copy MSVCP140.dll, VCRUNTIME140.dll, VCRUNTIME140_1.dll from C:\Windows\System32 to: $obsRoot\obs-plugins\64bit\" -ForegroundColor Gray
+                Write-Host "Workaround: run fix-obs-plugin-load.ps1 as Administrator (it copies obs.dll, VC++ runtimes, and all bin\64bit DLLs next to the plugin)." -ForegroundColor Gray
+            }
+            # Try to list dependencies with dumpbin if available
+            $dumpbin = $null
+            $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+            if (Test-Path $vswhere) {
+                $vsPath = & $vswhere -latest -property installationPath 2>$null
+                if ($vsPath) {
+                    $dumpbin = Get-ChildItem -Path $vsPath -Recurse -Filter "dumpbin.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+                }
+            }
+            if (-not $dumpbin) { $dumpbin = Get-Command dumpbin -ErrorAction SilentlyContinue }
+            if ($dumpbin) {
+                Write-Host "" -ForegroundColor Cyan
+                Write-Host "Dependencies of bongobs-cat.dll (dumpbin):" -ForegroundColor Cyan
+                $dumpbinExe = if ($dumpbin.Source) { $dumpbin.Source } else { $dumpbin.Path }
+                $out = & $dumpbinExe /dependents $dllPath 2>&1
+                $out | Where-Object { $_ -match "\.dll$" } | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
             }
         }
     } else {

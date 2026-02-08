@@ -22,10 +22,10 @@ This fork adds **native AZERTY keyboard support** to the Bongo Cat OBS plugin, s
 ### Installation
 
 1. Download the latest **[Bango.Cat.AZERTY.zip](https://github.com/Eclipes2/Bongobs-Cat-Plugin-Azerty/releases)** from Releases.
-2. **Extract the zip into your OBS installation folder** (the folder where **obs64.exe** is). The zip contains `obs-plugins` and `data` — let them merge with the existing OBS folders. **That’s it.**
+2. **Extract the zip into your OBS installation folder** (the folder where **obs64.exe** is). The zip contains `obs-plugins` and `data` — let them merge with the existing OBS folders.
 3. Open OBS, add the **Bongo Cat** source, and in **Mode** choose **standard_azerty** for AZERTY keyboards.
 
-No scripts to run. Just unzip and use.
+The zip is **self-contained**: it bundles the DLLs the plugin needs (including from OBS’s `bin\64bit`), so you don’t need to run any fix script. Just unzip and use.
 
 ### Building the release zip (maintainers)
 
@@ -41,6 +41,10 @@ This creates **Bango.Cat.AZERTY.zip** at the repo root. Upload it to GitHub Rele
 
 - Extract the zip so that **obs-plugins** and **data** are directly inside the OBS folder (where **obs64.exe** is), not in a subfolder.
 - Use **64-bit OBS** and install [VC++ 2015–2022 x64](https://aka.ms/vs/17/release/vc_redist.x64.exe) if needed.
+- If you use an **older zip** (without bundled DLLs) or OBS still reports a load error, run the fix script **as Administrator**. It copies **obs.dll**, the VC++ runtime DLLs, and **all DLLs from OBS’s bin\64bit folder** next to the plugin:
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File "path\to\scripts\fix-obs-plugin-load.ps1" -ObsPath "C:\Program Files\obs-studio"
+  ```
 
 ---
 

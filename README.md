@@ -8,7 +8,7 @@ This fork adds **native AZERTY keyboard support** to the Bongo Cat OBS plugin, s
 
 - The plugin already supports multiple **modes** (standard, keyboard, feixue, etc.). Each mode has a `config.json` that defines which key names trigger which visual slots (keyboard and hand images).
 - The default **standard** mode uses **QWERTY** key names: `q`, `e`, `r`, `space`, `a`, `d`, `s`, `w` for the letter keys. On an AZERTY keyboard, the same physical keys send `a`, `e`, `r`, `space`, `q`, `d`, `s`, `z` — so the overlay and actions were misaligned.
-- This fork introduces a separate mode **standard_azerty**: a copy of the standard mode where **KeyUse** in `config.json` is set to the key names that AZERTY keyboards actually send. No C++ or plugin logic is modified; the plugin simply reads the mode config and reacts to the key names we define.
+- This fork introduces a separate mode **standard_azerty**: a copy of the standard mode where **KeyUse** in `config.json` is set to the key names that AZERTY keyboards actually send. The plugin also uses **obs_module_file()** so it loads config and assets from the plugin data folder, so all 6 modes (including standard_azerty) appear when you use the DLL built from this repo.
 
 ### What was added
 
@@ -17,6 +17,7 @@ This fork adds **native AZERTY keyboard support** to the Bongo Cat OBS plugin, s
 | `Resources/Bango Cat/mode/standard_azerty/` | New mode folder (copy of `standard/` with assets) |
 | `standard_azerty/config.json` | Same as standard except **KeyUse** uses AZERTY keys: `["1","2","3","4","5","6","7","a","e","r","space","q","d","s","z"]` |
 | `mode/config.json` | **ModelPath** updated to include `"standard_azerty"` so the mode appears in OBS |
+| `View.cpp` / `View.hpp` | Plugin now uses **obs_module_file()** so config and assets load from `data/obs-plugins/bongobs-cat/Bango Cat/` (all 6 modes appear when using the DLL built from this repo) |
 
 ### How to use
 
@@ -26,6 +27,10 @@ This fork adds **native AZERTY keyboard support** to the Bongo Cat OBS plugin, s
 4. The cat will now respond correctly to A, Z, Q, W, and the other keys on an AZERTY keyboard.
 
 Optional: to show AZERTY labels on the on-screen keyboard, you can replace the PNGs in `mode/standard_azerty/keyboard/` (and optionally `lefthand/`) with versions that display A, Z, E, R, etc. The behaviour is already correct via **KeyUse**; custom images are only for visual labels.
+
+### Building the plugin
+
+To get a DLL that loads all 6 modes (including **standard_azerty**) from the plugin data folder, build this project with the OBS build environment (see [OBS build instructions for Windows](https://obsproject.com/wiki/Build-Instructions-For-Windows)). The plugin uses CMake and `install_obs_plugin_with_data`; it must be built as an OBS plugin (with libobs). After building, copy the generated **bongobs-cat.dll** into `release/obs-plugins/64bit/`, then zip the contents of the `release/` folder (bin, data, obs-plugins) so those three folders are at the root of **Bango.Cat.zip**. The plugin loads config and assets from `data/obs-plugins/bongobs-cat/Bango Cat/` via `obs_module_file()`.
 
 ---
 

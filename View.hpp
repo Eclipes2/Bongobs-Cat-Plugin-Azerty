@@ -7,6 +7,7 @@
 #include <Math/CubismViewMatrix.hpp>
 #include "CubismFramework.hpp"
 #include <Rendering/OpenGL/CubismOffscreenSurface_OpenGLES2.hpp>
+#include <string>
 
 
 #define MAXVIEWDATA 1024
@@ -162,4 +163,5 @@ private:
     SelectTarget target;
     EventManager *eventManager;
     InfoReader *_infoReader;
+    std::string _resourcesPath;
 };

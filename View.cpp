@@ -10,6 +10,7 @@
 #include "Sprite.hpp"
 #include "EventManager.hpp"
 #include "InfoReader.hpp"
+#include <obs-module.h>
 
 using namespace std;
 using namespace Define;
@@ -22,11 +23,23 @@ View::View() : _programId(0), _mod(0), isUseLive2d(true), isUseMask(false)
     _clearColor[3] = 0.0f;
 
     eventManager = new EventManager();
-    
 
-    const string resourcesPath = ResourcesPath;
-    const string modePath = resourcesPath + ModePath;
-    const string maskPath = resourcesPath + MaskPath;
+    char* mod_file = obs_module_file("locale/en-US.ini");
+    if (mod_file) {
+        string mod_path(mod_file);
+        bfree(mod_file);
+        size_t pos = mod_path.find("locale");
+        if (pos != string::npos) {
+            _resourcesPath = mod_path.substr(0, pos) + "Bango Cat/";
+        } else {
+            _resourcesPath = ResourcesPath;
+        }
+    } else {
+        _resourcesPath = ResourcesPath;
+    }
+
+    const string modePath = _resourcesPath + ModePath;
+    const string maskPath = _resourcesPath + MaskPath;
 
     _infoReader = new InfoReader();
     _infoReader->InitFaceFromConfig(maskPath.c_str());
@@ -300,9 +313,8 @@ void View::InitializeSpirite(int id) {
 	height = VtuberDelegate::GetInstance()->getBufferHeight(id);
 	LAppTextureManager *textureManager =VtuberDelegate::GetInstance()->GetTextureManager();
 
-	const string resourcesPath = ResourcesPath;
-	const string modePath = resourcesPath+ModePath;
-	const string maskPath = resourcesPath + MaskPath;
+	const string modePath = _resourcesPath + ModePath;
+	const string maskPath = _resourcesPath + MaskPath;
 
 	_viewData[id]._faceCount = _infoReader->_faceInfo->Facecount;
 	_viewData[id]._curentface = 0;
@@ -474,8 +486,7 @@ void View::InitializeModel(int id)
 	MODE_INFO *_modeinfo = _infoReader->_modeInfo;
 	Live2DManager *Live2DManager = Live2DManager::GetInstance();
 
-	const string resourcesPath = ResourcesPath;
-	const string modePath = resourcesPath + ModePath;
+	const string modePath = _resourcesPath + ModePath;
 	for (int _modelCount = 0; _modelCount < _infoReader->ModeCount;_modelCount++) {
 
 		string targetPath =modePath + _infoReader->ModePath[_modelCount] + "/";

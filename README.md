@@ -20,9 +20,9 @@ This fork adds **native AZERTY keyboard support** to the Bongo Cat OBS plugin, s
 
 ### How to use
 
-1. Build or install the plugin as usual (same as upstream Bongobs Cat).
+1. Download the latest release from [Releases](https://github.com/Eclipes2/Bongobs-Cat-Plugin-Azerty/releases) (get **Bango.Cat.zip** from the latest release). Unzip to the OBS root directory.
 2. In OBS, add the **Bongo Cat** source and open its **Properties**.
-3. In **Mode**, select **standard_azerty** instead of **standard**.
+3. In **Mode**, select **standard_azerty** (the zip includes this mode for AZERTY keyboards).
 4. The cat will now respond correctly to A, Z, Q, W, and the other keys on an AZERTY keyboard.
 
 Optional: to show AZERTY labels on the on-screen keyboard, you can replace the PNGs in `mode/standard_azerty/keyboard/` (and optionally `lefthand/`) with versions that display A, Z, E, R, etc. The behaviour is already correct via **KeyUse**; custom images are only for visual labels.
@@ -37,10 +37,10 @@ Optional: to show AZERTY labels on the on-screen keyboard, you can replace the P
 # Support
 * Support OBS Studio version** : 25.0.0+
 # 如何使用
-* 下载 [Bongo.Cat.zip](https://github.com/a1928370421/Bongobs-Cat-Plugin/releases/download/0.1.1/Bango.Cat.zip)
+* 从 [Releases](https://github.com/Eclipes2/Bongobs-Cat-Plugin-Azerty/releases) 下载最新版本（获取 **Bango.Cat.zip**）
 * 解压缩文件到OBS根目录
 # How to use
-* Download [Bongo.Cat.zip](https://github.com/a1928370421/Bongobs-Cat-Plugin/releases/download/0.1.1/Bango.Cat.zip)
-* Unzip file to OBS root direction
+* Download the latest release from [Releases](https://github.com/Eclipes2/Bongobs-Cat-Plugin-Azerty/releases) (get **Bango.Cat.zip** from the latest release)
+* Unzip to the OBS root directory
 # Bongo cat
 ![](https://github.com/a1928370421/Bongobs-Cat-Plugin/blob/master/Resources/Bango%20Cat/ezgif-2-81825e3faab3.gif)

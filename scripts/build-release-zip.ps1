@@ -4,8 +4,9 @@
 # Usage:
 #   .\scripts\build-release-zip.ps1 -ObsRundir "C:\...\obs-studio\build_x64\rundir\Release" -RepoPath "C:\...\Bongobs-Cat-Plugin-Azerty"
 #
-# The zip contains obs-plugins/64bit/ (plugin DLLs + obs.dll + all bin\64bit DLLs so it loads without fix script)
-# and data/obs-plugins/bongobs-cat/. Users just extract into their OBS folder and it works.
+# The zip contains obs-plugins/64bit/, data/obs-plugins/bongobs-cat/, and bin/64bit/obs-plugins/64bit/
+# (plugin + obs.dll + all bin\64bit DLLs in both load paths). Extract into the OBS folder so obs-plugins,
+# data, and bin merge with the existing folders. If the plugin still fails to load, run fix-obs-plugin-load.ps1.
 
 param(
     [Parameter(Mandatory = $true)]
@@ -28,6 +29,7 @@ if (-not (Test-Path $RepoPath)) {
 
 $pluginDll = Join-Path $ObsRundir "bin\64bit\obs-plugins\bongobs-cat.dll"
 $pluginDataDir = Join-Path $ObsRundir "data\obs-plugins\bongobs-cat"
+$releaseDataDir = Join-Path $RepoPath "release\data\obs-plugins\bongobs-cat"
 $live2dDll = Join-Path $RepoPath "CubismSdk\Core\dll\windows\x86_64\Live2DCubismCore.dll"
 
 if (-not (Test-Path $pluginDll)) {
@@ -78,20 +80,29 @@ try {
         if (Test-Path $src) { Copy-Item -Path $src -Destination (Join-Path $dest64 $_) -Force }
     }
 
+    # Also install plugin under bin/64bit/obs-plugins/64bit (OBS may load plugins from there)
+    $binPluginDest = Join-Path $tempDir "bin\64bit\obs-plugins\64bit"
+    New-Item -ItemType Directory -Path $binPluginDest -Force | Out-Null
+    Copy-Item -Path (Join-Path $dest64 "*") -Destination $binPluginDest -Recurse -Force
+    Write-Host "Plugin also in bin/64bit/obs-plugins/64bit (both OBS load paths)" -ForegroundColor Green
+
+    # Plugin data: prefer release/ (all modes + standard_azerty), then ObsRundir, then repo data + Resources
     $destData = Join-Path $tempDir "data\obs-plugins\bongobs-cat"
-    if (Test-Path $pluginDataDir) {
-        New-Item -ItemType Directory -Path (Split-Path $destData -Parent) -Force | Out-Null
+    New-Item -ItemType Directory -Path (Split-Path $destData -Parent) -Force | Out-Null
+    if (Test-Path $releaseDataDir) {
+        Copy-Item -Path $releaseDataDir -Destination $destData -Recurse -Force
+        Write-Host "Using release data (all modes): $releaseDataDir" -ForegroundColor Green
+    } elseif (Test-Path $pluginDataDir) {
         Copy-Item -Path $pluginDataDir -Destination $destData -Recurse -Force
     } else {
-        New-Item -ItemType Directory -Path $destData -Force | Out-Null
         Copy-Item -Path (Join-Path $RepoPath "data\*") -Destination $destData -Recurse -Force
         $bangoDest = Join-Path $destData "Bango Cat"
         New-Item -ItemType Directory -Path $bangoDest -Force | Out-Null
-        Copy-Item -Path (Join-Path $RepoPath "Resources\*") -Destination $bangoDest -Recurse -Force
+        Copy-Item -Path (Join-Path $RepoPath "Resources\Bango Cat\*") -Destination $bangoDest -Recurse -Force
     }
 
     if (Test-Path $OutputZip) { Remove-Item $OutputZip -Force }
-    Compress-Archive -Path (Join-Path $tempDir "obs-plugins"), (Join-Path $tempDir "data") -DestinationPath $OutputZip -CompressionLevel Optimal
+    Compress-Archive -Path (Join-Path $tempDir "obs-plugins"), (Join-Path $tempDir "data"), (Join-Path $tempDir "bin") -DestinationPath $OutputZip -CompressionLevel Optimal
     Write-Host "Created: $OutputZip" -ForegroundColor Cyan
 } finally {
     Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue

@@ -21,15 +21,15 @@ This fork adds **native AZERTY keyboard support** to the Bongo Cat OBS plugin, s
 
 ### Installation
 
-1. Download the latest **[Bango.Cat.AZERTY.zip](https://github.com/Eclipes2/Bongobs-Cat-Plugin-Azerty/releases)** from Releases.
+1. Download **[Bango.Cat.AZERTY.zip](https://github.com/Eclipes2/Bongobs-Cat-Plugin-Azerty/releases)** (OBS 32.0.4) from Releases.
 2. **Extract the zip into your OBS installation folder** (the folder where **obs64.exe** is). The zip contains `obs-plugins` and `data` — let them merge with the existing OBS folders.
 3. Open OBS, add the **Bongo Cat** source, and in **Mode** choose **standard_azerty** for AZERTY keyboards.
 
 The zip is **self-contained**: it bundles the DLLs the plugin needs (including from OBS’s `bin\64bit`), so you don’t need to run any fix script. Just unzip and use.
 
-### Building the release zip (maintainers)
+### Building the release zip (OBS 32.0.4)
 
-Build the plugin inside the OBS tree, then run:
+Build the plugin inside the OBS 32.0.4 tree, then run:
 
 ```powershell
 .\scripts\build-release-zip.ps1 -ObsRundir "C:\path\to\obs-studio\build_x64\rundir\Release" -RepoPath "C:\path\to\Bongobs-Cat-Plugin-Azerty"
@@ -37,15 +37,61 @@ Build the plugin inside the OBS tree, then run:
 
 This creates **Bango.Cat.AZERTY.zip** at the repo root. Upload it to GitHub Releases.
 
+### Build the plugin for OBS 32.0.4
+
+**Prerequisites:** [Visual Studio 2022](https://visualstudio.microsoft.com/) (C++ desktop), [CMake](https://cmake.org/) 3.28+, [Git](https://gitforwindows.org/).
+
+1. Clone OBS 32.0.4 and add the plugin :
+   ```powershell
+   git clone --recursive https://github.com/obsproject/obs-studio.git
+   cd obs-studio
+   git checkout 32.0.4
+   git submodule update --init --recursive
+   ```
+   Copy the **entire content** of this repo into `obs-studio\plugins\bongobs-cat\`.
+
+2. In `obs-studio\plugins\CMakeLists.txt`, add :
+   ```cmake
+   add_subdirectory(bongobs-cat)
+   ```
+
+3. Build :
+   ```powershell
+   cmake --preset windows-x64
+   cmake --build build_x64 --config Release
+   ```
+
+4. Install : run the release script then extract the zip into your OBS folder, or copy `bongobs-cat.dll` (and `Live2DCubismCore.dll` from this repo) into `obs-plugins\64bit\`, and `release\data\obs-plugins\bongobs-cat\` into `data\obs-plugins\bongobs-cat\`.
+
 ### If the plugin doesn’t load
 
+- This plugin is built for **OBS 32.0.4** only. Use the zip from Releases or build from source (see above).
 - Extract the zip so that **obs-plugins** and **data** are directly inside the OBS folder (where **obs64.exe** is), not in a subfolder.
 - Use **64-bit OBS** and install [VC++ 2015–2022 x64](https://aka.ms/vs/17/release/vc_redist.x64.exe) if needed.
 - If you use an **older zip** (without bundled DLLs) or OBS still reports a load error, run the fix script **as Administrator**. It copies **obs.dll**, the VC++ runtime DLLs, and **all DLLs from OBS’s bin\64bit folder** next to the plugin:
   ```powershell
   powershell -ExecutionPolicy Bypass -File "path\to\scripts\fix-obs-plugin-load.ps1" -ObsPath "C:\Program Files\obs-studio"
   ```
+  If OBS shows **"bongobs-cat" twice** or error 126 persists after the fix, run with **-UseBin64Only** so the plugin is only loaded from `bin\64bit\obs-plugins\64bit`.
+  If after **-UseBin64Only** the **Bongo Cat** source no longer appears in the list, run with **-RestoreToRoot** so OBS finds it again (and the script re-copies dependencies to the root plugin folder):
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File "path\to\scripts\fix-obs-plugin-load.ps1" -ObsPath "C:\Program Files\obs-studio" -RestoreToRoot
+  ```
+
+### Getting more details about the failure
+
+To see **why** the plugin fails to load (beyond the OBS dialog):
+
+1. **Diagnostic script** (Windows error code + missing DLLs): run from the repo or any folder, then open the report file:
+   ```powershell
+  powershell -ExecutionPolicy Bypass -File "path\to\scripts\diagnose-plugin-load.ps1" -ObsPath "C:\Program Files\obs-studio" -SimulateOBS -ReportPath "diagnose-report.txt"
+   ```
+   - **Error 126** = a dependency DLL is missing next to the plugin; the report lists which. Fix: run `fix-obs-plugin-load.ps1` as Administrator.
+   - **Error 127** = version mismatch (plugin is for OBS 32.0.4).
+   - **Error 193** = 32-bit / 64-bit mismatch.
+
+2. **OBS log**: **Help → Log Files → View Current Log**. Search for **bongobs-cat**.
 
 ---
 
-**Upstream:** [Bongobs-Cat-Plugin](https://github.com/a1928370421/Bongobs-Cat-Plugin) — Bongo Cat Live2D overlay for OBS (OBS Studio 25.0.0+). This fork adds the **standard_azerty** mode for AZERTY keyboards.
+**Upstream:** [Bongobs-Cat-Plugin](https://github.com/a1928370421/Bongobs-Cat-Plugin). This fork adds the **standard_azerty** mode for AZERTY keyboards. **OBS 32.0.4** only.

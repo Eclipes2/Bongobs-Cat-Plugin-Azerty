@@ -60,3 +60,11 @@ So the **original** plugin expects resources under **bin/64bit/Bango Cat/** (pat
 | `data/obs-plugins/bongobs-cat/` | **locale/** + **Bango Cat/** with **mode/config.json**, **mode/standard_azerty/** (and other modes), **face/**, etc. |
 
 This fork uses **obs_module_file()** so config and assets are loaded from **data/obs-plugins/bongobs-cat/Bango Cat/** (no assets under `bin/64bit/Bango Cat/`). The fix script and dependency copies (obs.dll, bin/64bit DLLs) are the same regardless of which zip you use; only the data layout differs.
+
+## Building the release zip (maintainers)
+
+**build-release-zip.ps1** chooses the plugin data for the zip in this order:
+
+1. **release/data/obs-plugins/bongobs-cat** — If this folder exists in the repo, it is used as-is. That guarantees the zip contains the full set of modes (standard, standard_azerty, keyboard, feixue, bilibiliduo, mania) and the correct layout. Keep this folder in sync with **Resources/Bango Cat/** (or populate it from a known-good install) so the script always produces a zip with all modes.
+2. **ObsRundir/data/obs-plugins/bongobs-cat** — If release/ is missing, the script uses the OBS build output data dir.
+3. **Fallback** — Repo **data/** (locale) plus **Resources/Bango Cat/** contents copied into **Bango Cat/** (so the zip has `data/obs-plugins/bongobs-cat/Bango Cat/mode/config.json`, not `.../Bango Cat/Bango Cat/mode/...`).

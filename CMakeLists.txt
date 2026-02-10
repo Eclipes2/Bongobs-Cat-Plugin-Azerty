@@ -13,27 +13,29 @@ set(RES_PATH ${SDK_ROOT_PATH}/Resources)
 
 project(${APP_NAME})
 
-# Detect architecture.
-if(CMAKE_EXE_LINKER_FLAGS STREQUAL "/machine:x64 /OPT:REF")
+# Detect architecture (support both CMAKE_SIZEOF_VOID_P and legacy linker flags).
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   set(ARCH x86_64)
-elseif(CMAKE_EXE_LINKER_FLAGS STREQUAL "/machine:x86 /OPT:REF")
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+  set(ARCH x86)
+elseif(CMAKE_EXE_LINKER_FLAGS MATCHES "/machine:x64")
+  set(ARCH x86_64)
+elseif(CMAKE_EXE_LINKER_FLAGS MATCHES "/machine:x86")
   set(ARCH x86)
 else()
-  message(FATAL_ERROR "[${APP_NAME}] Invalid linker flag ${CMAKE_EXE_LINKER_FLAGS}.")
+  message(FATAL_ERROR "[${APP_NAME}] Invalid or unsupported architecture.")
 endif()
 
-# Detect compiler.
+# Detect compiler (use 142 libs for VS 2022+ when Cubism only provides up to 142).
 if(MSVC_VERSION MATCHES 1800)
-  # Visual Studio 2013
   set(COMPILER 120)
 elseif(MSVC_VERSION MATCHES 1900)
-  # Visual Studio 2015
   set(COMPILER 140)
 elseif(MSVC_VERSION GREATER_EQUAL 1910 AND MSVC_VERSION LESS 1920)
-  # Visual Studio 2017
   set(COMPILER 141)
 elseif(MSVC_VERSION GREATER_EQUAL 1920 AND MSVC_VERSION LESS 1930)
-  # Visual Studio 2019
+  set(COMPILER 142)
+elseif(MSVC_VERSION GREATER_EQUAL 1930)
   set(COMPILER 142)
 elseif(MSVC)
   message(FATAL_ERROR "[${APP_NAME}] Unsupported Visual C++ compiler used.")
@@ -65,7 +67,8 @@ set_target_properties(Live2DCubismCore
     INTERFACE_INCLUDE_DIRECTORIES ${CORE_PATH}/include
 )
 
-# Add GLEW ,GLFW.
+# Add GLEW ,GLFW. Disable GLEW utils (glewinfo, visualinfo) to avoid C4133 /WX errors with newer MSVC.
+set(BUILD_UTILS OFF CACHE BOOL "Build GLEW utilities" FORCE)
 add_subdirectory(${GLEW_PATH}/build/cmake ${CMAKE_CURRENT_SOURCE_DIR}/gl/glew)
 add_subdirectory(${GLFW_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/gl/glfw)
 set_target_properties(glew PROPERTIES FOLDER "plugins/${APP_NAME}")
@@ -147,5 +150,14 @@ target_include_directories(${APP_NAME} PRIVATE ${STB_PATH})
 
 set_target_properties(${APP_NAME} PROPERTIES FOLDER "plugins/${APP_NAME}")
 
-install_obs_plugin_with_data(${APP_NAME} data)
+# OBS 32+: use set_target_properties_obs (install_obs_plugin_with_data was removed)
+# When building inside OBS tree, set_target_properties_obs is defined and installs the plugin + data/
+if(COMMAND set_target_properties_obs)
+  set_target_properties_obs(${APP_NAME} PROPERTIES FOLDER "plugins/${APP_NAME}" PREFIX "")
+else()
+  # Standalone or older OBS: keep legacy macro name if it exists
+  if(COMMAND install_obs_plugin_with_data)
+    install_obs_plugin_with_data(${APP_NAME} data)
+  endif()
+endif()
 

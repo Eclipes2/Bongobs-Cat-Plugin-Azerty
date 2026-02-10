@@ -27,15 +27,20 @@ if (-not (Test-Path $RepoPath)) {
     exit 1
 }
 
-$pluginDll = Join-Path $ObsRundir "bin\64bit\obs-plugins\bongobs-cat.dll"
+# OBS 32 puts plugins in obs-plugins\64bit\; older builds may use bin\64bit\obs-plugins\
+$pluginDll = Join-Path $ObsRundir "obs-plugins\64bit\bongobs-cat.dll"
+if (-not (Test-Path $pluginDll)) {
+    $pluginDll = Join-Path $ObsRundir "bin\64bit\obs-plugins\bongobs-cat.dll"
+}
 $pluginDataDir = Join-Path $ObsRundir "data\obs-plugins\bongobs-cat"
 $releaseDataDir = Join-Path $RepoPath "release\data\obs-plugins\bongobs-cat"
 $live2dDll = Join-Path $RepoPath "CubismSdk\Core\dll\windows\x86_64\Live2DCubismCore.dll"
 
 if (-not (Test-Path $pluginDll)) {
-    Write-Host "Plugin DLL not found: $pluginDll" -ForegroundColor Red
+    Write-Host "Plugin DLL not found. Tried: obs-plugins\64bit\bongobs-cat.dll and bin\64bit\obs-plugins\bongobs-cat.dll under $ObsRundir" -ForegroundColor Red
     exit 1
 }
+Write-Host "Using plugin DLL: $pluginDll" -ForegroundColor Gray
 if (-not (Test-Path $live2dDll)) {
     Write-Host "Live2DCubismCore.dll not found: $live2dDll" -ForegroundColor Red
     exit 1
